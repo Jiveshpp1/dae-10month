@@ -1,0 +1,68 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="main.css">
+    <title>Calender</title>
+    <script type="module" src="main.js"></script>                                
+</head>
+<body>
+    <header class="main-header"> 
+        <h1>Calendar Page</h1>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="index.html">Login</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+
+    </header>
+    <hr>
+    <main>
+        <div class="calendar-section">
+            <div class='cal-head'>
+                <button type="button" id="prev-btn">Prev</button>
+                <h2 id="dateth"></h2>
+                <button type="button" id="next-btn">Next</button>
+            </div>
+            <div id='m-cal'>
+                <div class='cal-day'>Sun</div>
+                <div class='cal-day'>Mon</div>
+                <div class='cal-day'>Tue</div>
+                <div class='cal-day'>Wed</div>
+                <div class='cal-day'>Thu</div>
+                <div class='cal-day'>Fri</div>
+                <div class='cal-day'>Sat</div>
+                <!-- Let JS Cook -->
+            </div>  
+        </div>
+
+        <div class="reminder-section">
+            <h2>Reminders</h2>
+            <ul class="REDI" id="reminder-list"></ul>
+           
+        </div>
+
+        <div class="events-section" id="events">
+            <h2>Events this month</h2>
+            <ul id="event-list" class="list"></ul>
+        </div>
+        <div id="sa"></div>
+    </main>
+    <footer>
+        <p>&copy; Made by LuisGamerCool23</p>
+        <a href="https://www.youtube.com/watch?v=z3bYC3Jm33Q"><img src="LUIS GAMER.jpeg" alt="Luis Gamer" style="width: 5px; height: 5px;"></a>
+    </footer>
+    <!-- Modal for adding events -->
+     <div id ="event-modal" class="m">
+        <div class="modal-content">
+            <span class="close" id="close">&times;</span>
+            <h2>Add event</h2>
+            <p id="modal-date"></p>
+            <input type="text" id="event-title" placeholder="Title Of Event">
+            <button type="button" id="save">Save</button>
+        </div>
+     </div>
+</body>
+</html>
