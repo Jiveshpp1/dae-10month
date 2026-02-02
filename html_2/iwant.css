@@ -1,0 +1,123 @@
+body{
+    background-color: rgb(30, 30, 52);
+    color: white;
+    font-family: 'Poppins', Arial, sans-serif;
+
+}
+body{
+    background-image: linear-gradient(rgb(30,30,52), rgb(20,20,40));
+}
+h1{
+    text-shadow: 2px 2px 4px black;
+}
+
+header{
+    background-color: rgb(20, 20, 40);
+    
+    text-align: left;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+nav.navbar ul{
+    list-style: none;
+    padding: 0;
+    text-align: left;
+    display: flex;
+
+}
+nav.navbar ul li{
+    margin-right: 15px;
+}
+nav.navbar ul li a{
+    color: rgb(154, 136, 136);
+    text-decoration: none;
+    font-weight: bold;
+     margin-left: 10px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+nav.navbar ul li a:hover{
+    transition: 500ms color;
+    text-decoration: underline;
+    color: white;
+}
+.login-form{
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: rgb(40, 40, 70);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 500px;
+    height: 300px;
+}
+#login-section{
+    display: flex;
+    align-items: center;
+    
+}
+.label-login{
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 30px;
+}
+.btn-login{
+    width: 250px;
+    padding: 10px;
+    background-color: rgb(70, 70, 120);
+    border: none;
+    border-radius: 30px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 10px ;
+    align-items: center;
+    display: inline-block;
+}
+.btn-login:hover{
+    background-color: rgb(80, 80, 128);
+    transition: 300ms background-color;
+}
+.btn-login:active{
+    background-color: rgb(60, 60, 110);
+}
+.input-login{
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    box-sizing: border-box;
+    font-size: 16px;
+    background-color: black;
+    color: white;
+}
+/* Mobile */
+@media (max-width: 600px) {
+    .login-form{
+        width: 90%;
+    }
+}
+
+/* Tablet */
+@media (min-width: 601px) and (max-width: 1024px) {
+    .login-form{
+        width: 70%;
+    }
+}
+
+/* Desktop */
+@media (min-width: 1025px) {
+    .login-form{
+        width: 500px;
+    }
+}
