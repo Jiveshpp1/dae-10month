@@ -1,20 +1,27 @@
-body{
-    background-color: rgb(30, 30, 52);
-    color: white;
-    font-family: 'Poppins', Arial, sans-serif;
 
+
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    color: #e0e0e0;
+    background-color: #0d0d0d;
 }
+
 body{
-    background-image: linear-gradient(rgb(30,30,52), rgb(20,20,40));
+   background-image: linear-gradient(
+        135deg,
+        #0d0d0d 0%,
+        #111a14 40%,
+        #0d0d0d 100%
+    );
 }
+
 h1{
     text-shadow: 2px 2px 4px black;
 }
-
-header{
-    background-color: rgb(20, 20, 40);
-    
-    text-align: left;
+header {
+    background-color: #1a1a1a;
     padding: 20px 40px;
     display: flex;
     justify-content: space-between;
@@ -24,6 +31,8 @@ header{
     top: 0;
     z-index: 1000;
 }
+
+
 nav.navbar ul{
     list-style: none;
     padding: 0;
@@ -35,7 +44,7 @@ nav.navbar ul li{
     margin-right: 15px;
 }
 nav.navbar ul li a{
-    color: rgb(154, 136, 136);
+    color: rgb(69, 155, 113);
     text-decoration: none;
     font-weight: bold;
      margin-left: 10px;
@@ -47,7 +56,7 @@ nav.navbar ul li a{
 nav.navbar ul li a:hover{
     transition: 500ms color;
     text-decoration: underline;
-    color: white;
+    color: rgb(45, 104, 173);
 }
 .login-form{
     max-width: 400px;
@@ -55,9 +64,9 @@ nav.navbar ul li a:hover{
     padding: 20px;
     background-color: rgb(40, 40, 70);
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    width: 500px;
-    height: 300px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    width: 3rem;
+    height: 400px;
 }
 #login-section{
     display: flex;
@@ -73,33 +82,136 @@ nav.navbar ul li a:hover{
 .btn-login{
     width: 250px;
     padding: 10px;
-    background-color: rgb(70, 70, 120);
     border: none;
     border-radius: 30px;
-    color: white;
     font-size: 16px;
     cursor: pointer;
     margin: 10px ;
     align-items: center;
     display: inline-block;
+    background-color: #2ecc71;
+    color: #0d0d0d;
+    font-weight: 600;
 }
-.btn-login:hover{
-    background-color: rgb(80, 80, 128);
+.btn-login:hover{  
+    background-color: #27ae60;
     transition: 300ms background-color;
+
 }
 .btn-login:active{
-    background-color: rgb(60, 60, 110);
+    background-color: rgb(82, 110, 60);
 }
+/* Divider */
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 15px 0;
+    color: #888;
+    font-size: 14px;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background-color: #333;
+}
+
+.divider span {
+    margin: 0 ;
+}
+
+/* Google login button */
+.google-login {
+    width: 250px;
+    padding: 10px;
+    border-radius: 30px;
+    border: 1px solid #333;
+    background-color: #0d0d0d;
+    color: #e0e0e0;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.google-login img {
+    width: 18px;
+    height: 18px;
+}
+
+.google-login:hover {
+    background-color: #1a1a1a;
+    box-shadow: 0 0 8px rgba(46, 204, 113, 0.25);
+}
+
+.features-section {
+    padding: 60px 20px;
+    background: linear-gradient(
+        1835deg,
+        #0d0d0d 0%,
+        #111111 50%,
+        #0d0d0d 100%
+    );
+    text-align: center;
+}
+
+.features-container h2 {
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    color: #e0e0e0;
+}
+
+.feature-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+}
+
+.feature-card {
+    background-color: #1a1a1a;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    flex: 1;
+    min-width: 280px;
+    max-width: 350px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+.feature-card h3 {
+    font-size: 1.5rem;
+    color: #2ecc71;
+    margin-bottom: 15px;
+}
+
+.feature-card p {
+    color: #e0e0e0;
+}
+
 .input-login{
     width: 100%;
     padding: 10px;
     margin-bottom: 15px;
-    border: 1px solid #ccc;
+    border: 1px solid #333;
     border-radius: 15px;
     box-sizing: border-box;
     font-size: 16px;
-    background-color: black;
-    color: white;
+    background-color: #0d0d0d;
+    color: #e0e0e0;
 }
 /* Mobile */
 @media (max-width: 600px) {
@@ -121,3 +233,5 @@ nav.navbar ul li a:hover{
         width: 500px;
     }
 }
+
+

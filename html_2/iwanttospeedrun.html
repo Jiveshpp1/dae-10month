@@ -1,49 +1,72 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+
     <link rel="stylesheet" href="iwant.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
-
-    <title>Ineed to speed run</title>
 </head>
 <body>
-    <header>
-        <h1>Login</h1>
-        <nav class="navbar">
-            <ul>
-                <li><a href="https://chatgpt.com" target="_blank">Chagpt</a></li>
-                <li><a href="/mainproject/landing.html">Landing</a>
-                    <a href="ourstupidverystupidvision.html">NONON</a>
-                </li>
-            </ul>
-            </nav>
-    </header>`
-    <main>
-        <section id="login-section">
-            <form class="login-form">
-                <label for="username" class="label-login">Username:</label>
-                <input class="input-login" type="text" id="username" name="username" required>
 
-                <label for="password" class="label-login">Password:</label>
-                <input class="input-login" type="password" id="password" name="password" required>
+<header>
+    <h1>Login</h1>
+    <nav class="navbar">
+        <ul>
+            <li><a href="https://chatgpt.com" target="_blank">ChatGPT</a></li>
+            <li><a href="landing.html">Landing</a></li>
+            <li><a href="ourstupidverystupidvision.html">Testing Grounds</a></li>
+            <li><a href="aiarea.html" target="_blank">Testing Grounds 2.0</a></li>
+        </ul>
+    </nav>
+</header>
 
-                <button type="submit" class="btn-login">Login</button>
-                <br>
-                <label>
-                <input
-                    type="checkbox"
-                    name="remember"
-                    value="remember"
-                >
-                Remember me
-                </label>
+<main class="page-center">
+    <section id="login-section">
+        <form class="login-form">
+            <label for="username" class="label-login">Username</label>
+            <input class="input-login" type="text" id="username" required>
 
-            </form>
-              
+            <label for="password" class="label-login">Password</label>
+            <input class="input-login" type="password" id="password" required>
+            <center>
+            <button type="submit" class="btn-login">Login</button>
+            <br>
+            
+            <label class="remember">
+                <input type="checkbox"> Remember me
+            </label>
+            <div class="divider">
+            <span>or</span>
+        </div>
+            <button type="button" class="google-login">
+                <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
+                Continue with Google
+            </button>
+        </center>
+        </form>
+    </section>
+       <section id="features" class="features-section">
+            <div class="features-container">
+                <h2>Our Features</h2>
+                <div class="feature-list">
+                    <div class="feature-card">
+                        <h3>Personalized Study Plans</h3>
+                        <p>Our AI creates a answers based on your individual strengths and weaknesses, prioritizing essential topics for focused review.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Intelligent Practice Quizzes</h3>
+                        <p>Enhance your knowledge retention with quizzes that adapt to your performance, providing instant feedback and targeted review sessions.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Automated Flashcard Generation</h3>
+                        <p>Effortlessly create flashcards from your notes and textbooks. The AI organizes them into a proven, spaced-repetition system for effective memorization.</p>
+                    </div>
+                </div>
+            </div>
         </section>
-        
-    </main>
-    <footer></footer>
+</main>
+
 </body>
 </html>

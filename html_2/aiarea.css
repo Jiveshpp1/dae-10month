@@ -1,0 +1,90 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    color: #e0e0e0;
+    background-color: #0d0d0d;
+}
+
+body{
+   background-image: linear-gradient(
+        135deg,
+        #0d0d0d 0%,
+        #111a14 40%,
+        #0d0d0d 100%
+    );
+}
+
+h1{
+    text-shadow: 2px 2px 4px black;
+}
+header {
+    background-color: #1a1a1a;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+
+nav.navbar ul{
+    list-style: none;
+    padding: 0;
+    text-align: left;
+    display: flex;
+
+}
+nav.navbar ul li{
+    margin-right: 15px;
+}
+nav.navbar ul li a{
+    color: rgb(69, 155, 113);
+    text-decoration: none;
+    font-weight: bold;
+     margin-left: 10px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+nav.navbar ul li a:hover{
+    transition: 500ms color;
+    text-decoration: underline;
+    color: rgb(45, 104, 173);
+}
+.response-to-queries {
+    padding: 60px 20px;
+    background: linear-gradient(
+        135deg,
+        #0d0d0d 0%,
+        #111111 50%,
+        #0d0d0d 100%
+    );
+    text-align: center;
+
+    height: calc(100vh - 100px); /* accounts for header */
+    width: 95%;
+
+    display: flex;
+    flex-direction: column;
+}
+#response-container {
+    flex: 1; /* takes all available space */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#user-input-container {
+    background-color: rgb(28, 27, 27);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+
+    padding: 20px;
+    width: 100%;
+    margin-top: auto; /* THIS locks it to the bottom */
+}
