@@ -48,3 +48,8 @@ for(let i = 0; i < days.length; i++){
 let reminder = setInterval(function(){
     console.log("Remember to check your calendar!");
 }, 5000);
+let clearReminder = clearInterval(function(){
+    console.log("clear!");
+},15000);
+reminder();
+clearReminder();
