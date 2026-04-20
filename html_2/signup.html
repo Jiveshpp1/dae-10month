@@ -11,7 +11,7 @@
 <body>
 
 <header>
-    <h1>Login</h1>
+    <h1>Signup</h1>
     <nav class="navbar">
         <ul>
             <li><a href="https://chatgpt.com" target="_blank">ChatGPT</a></li>
@@ -24,14 +24,14 @@
 
 <main class="page-center">
     <section id="login-section">
-        <form class="login-form">
+        <form class="login-form" id="s_form">
             <label for="username" class="label-login">Username</label>
-            <input class="input-login" type="text" id="username" required>
+            <input class="input-login" type="text" id="username_s" required>
 
             <label for="password" class="label-login">Password</label>
-            <input class="input-login" type="password" id="password" required>
-            <center>
-            <button type="submit" class="btn-login">Login</button>
+            <input class="input-login" type="password" id="password_s" required>
+        <center>
+            <button type="submit" class="btn-login">Sign UP</button>
             <br>
             
             <label class="remember">
@@ -40,7 +40,7 @@
             <div class="divider">
             <span>or</span>
         </div>
-            <button type="button" class="google-login">
+            <button type="button" class="google-login" onclick="signInWithGoogle()">
                 <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
                 Continue with Google
             </button>
@@ -70,3 +70,4 @@
 
 </body>
 </html>
+<script src="login.js" type="module"></script>
