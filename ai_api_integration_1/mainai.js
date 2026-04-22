@@ -3,7 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
 // 1. Initialize the API with your Firebase-generated key
-const genAI = new GoogleGenerativeAI("AIzaSyAZM1hrzm_B6QoDgb4W7FKX-8D2jqToY4c");
+const genAI = new GoogleGenerativeAI("secretkeyu");
 
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 console.log("Gemini Model Initialized"); // Add this line!
@@ -15,7 +15,7 @@ console.log("Gemini Model Initialized"); // Add this line!
 
 // Your web app's Firebase configuration
 export const firebaseConfig = {
-  apiKey: "AIzaSyBdsJs6i6c67oKA8i8gkdlXLp_uRA4hzLg",
+  apiKey: "secretkeyu",
   authDomain: "aistudy-c918e.firebaseapp.com",
   projectId: "aistudy-c918e",
   storageBucket: "aistudy-c918e.firebasestorage.app",
@@ -45,7 +45,7 @@ async function openRouter() {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": "Bearer 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",
+        "Authorization": "key",
         "Content-Type": "application/json",
         "HTTP-Referer": window.location.origin,
         "X-Title": "AI Study App"
