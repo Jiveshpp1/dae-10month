@@ -67,7 +67,27 @@
             </div>
         </section>
 </main>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 
+<div id="g_id_onload"
+     data-client_id="1092891072334-57cccvf9dapcs6tqdjit161ii1trf6k1.apps.googleusercontent.com"
+     data-callback="handleLogin">
+</div>
+
+<script>
+function handleLogin(response) {
+  fetch("http://localhost:3000/google-login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: response.credential })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log("Logged in:", data);
+    window.location.href = "dashboard.html";
+  });
+}
+</script>
 </body>
 </html>
 <script src="login.js" type="module"></script>

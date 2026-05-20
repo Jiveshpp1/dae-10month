@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ai Area </title>
+    <link rel="stylesheet" href="aiarea.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <header>
+    <h1>AI Chat</h1>
+        <nav class="navbar">
+            <ul>
+                <li><a href="https://chatgpt.com" target="_blank">ChatGPT</a></li>
+                <li><a href="landing.html">Landing</a></li>
+                <li><a href="ourstupidverystupidvision.html">Testing Grounds</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="app-container">
+    <aside class="sidebar">
+        <button class="new-chat-btn">
+            <i class="fas fa-plus"></i> New Chat
+        </button>
+        
+        <div class="chat-history">
+            <p class="history-label">Recent</p>
+            <ul>
+                <li class="active"><i class="far fa-message"></i> Project: AI Area</li>
+                <li><i class="far fa-message"></i> gay</li>
+            </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <div class="avatar">U</div>
+                <span>User Name</span>
+            </div>
+        </div>
+    </aside>
+
+    <main class="chat-area">
+        <div class="chat-window" id="chat-window">
+            <div class="message user">
+                <div class="message-inner">
+                    <div class="text" id="user-input-src">HI</div>
+                </div>
+            </div>
+
+            <div class="message ai">
+                <div class="message-inner">
+                    <div class="avatar-ai"><i class="fas fa-robot"></i></div>
+                    <div class="text" id="airesponce">Hello! How can I help you today?</div>
+                </div>
+            </div>
+        </div>
+        <center>
+            <div class="input-wrapper">
+                <div class="left-controls">
+                    <button type="button" class="action-btn" id="clear-button" title="Clear">
+                        <i class="fas fa-trash-can"></i>
+                    </button>
+                    
+                    <button type="button" class="action-btn" id="triggerButton" title="Camera">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                    
+                    <label for="openfile" class="action-btn" title="Upload">
+                        <i class="fas fa-paperclip"></i>
+                    </label>
+                    <input type="file" id="openfile" hidden>
+                </div>
+
+                <textarea id="user-input" placeholder="Ask me anything..." rows="1"></textarea>
+
+                <button id="submit-button" class="send-btn" title="Send">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+            </div>
+        </center>
+        <footer class="input-container">
+            <p class="disclaimer">AI Area can make mistakes. Check important info.</p>
+        </footer>
+    </main>
+</div>
+
+</body>
+</html>
+<script src="aiarea.js" type="module"></script>
