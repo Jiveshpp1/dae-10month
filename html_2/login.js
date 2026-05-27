@@ -1,84 +1,142 @@
-import { firebaseConfig } from './mainai.js';
+console.log("Login loaded — using MySQL backend (no Firebase)");
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+const SERVER = "http://localhost:3000";
+const GOOGLE_CLIENT_ID = "1092891072334-57cccvf9dapcs6tqdjit161ii1trf6k1.apps.googleusercontent.com";
 
-import { 
-  getAuth, 
-  GoogleAuthProvider, 
-  signInWithPopup, 
-  onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+// ─── Save user to localStorage ───────────────────────────────────────────────
+function saveUserLocally(id, email, username) {
+  localStorage.setItem("user_id", id);
+  localStorage.setItem("user_email", email);
+  localStorage.setItem("user_name", username);
+}
 
+// ─── If already logged in, skip to main ──────────────────────────────────────
+if (localStorage.getItem("user_id")) {
+  window.location.replace("main.html");
+}
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const database = getDatabase(app); 
-const provider = new GoogleAuthProvider();
-
-console.log("Firebase initialized");
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    loadUserEvents(user.uid);  // Directly use user.uid
-  } else {
-    console.warn('No user logged in');
-  }
-});
-//Google Sign-In function
-window.signInWithGoogle = function () {
-  signInWithPopup(auth, provider)
-    .then((result) => {
-      const user = result.user;
-      console.log("Google user:", user);
-
-      alert("Signed in with Google!");
-      window.location.replace("main.html");
-    })
-    .catch((error) => {
-      console.error("Google sign-in error:", error);
-      alert(error.message);
+// ─── Google callback — fires after user picks account ────────────────────────
+async function handleGoogleCredential(response) {
+  try {
+    const res = await fetch(`${SERVER}/google-login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: response.credential })
     });
+    const data = await res.json();
+    if (data.success) {
+      saveUserLocally(data.user.google_id, data.user.email, data.user.username);
+      window.location.replace("main.html");
+    } else {
+      alert("Google login failed: " + (data.error || "Unknown error"));
+    }
+  } catch (err) {
+    console.error("Google login error:", err);
+    alert("Could not connect to server. Is it running?");
+  }
+}
+
+// ─── Initialize Google GSI ONCE on page load ─────────────────────────────────
+let googleInitialized = false;
+
+function initGoogle() {
+  if (googleInitialized) return;  // ✅ prevent multiple initializations
+  if (typeof google === "undefined") {
+    console.warn("Google GSI not loaded yet, retrying...");
+    setTimeout(initGoogle, 500);
+    return;
+  }
+
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleGoogleCredential,
+    ux_mode: "popup",
+    cancel_on_tap_outside: true
+  });
+
+  // ✅ Render a real Google button — works even when One Tap is blocked by Chrome
+  const container = document.getElementById("google-btn-container");
+  if (container) {
+    google.accounts.id.renderButton(container, {
+      theme: "outline",
+      size: "large",
+      width: 250,
+      text: "continue_with"
+    });
+  }
+
+  googleInitialized = true;
+  console.log("Google GSI initialized ✅");
+}
+
+// Run after page loads
+window.addEventListener("load", initGoogle);
+
+// ─── Keep the onclick working too (as a backup) ──────────────────────────────
+window.signInWithGoogle = function () {
+  const container = document.getElementById("google-btn-container");
+  if (container) {
+    // Click the rendered Google button programmatically
+    const btn = container.querySelector("div[role=button]");
+    if (btn) { btn.click(); return; }
+  }
+  alert("Google sign-in is loading, please try again in a moment.");
 };
-// Signup function
-function registerUser(email, password){
-    createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredetail) => {
-            const user = userCredetail.user;
-            console.log('User Created: ', user.email);
-            alert('You have created your account :)');
-            console.log("Redirecting to main.html...");
-            window.location.replace("main.html");  // redirect after signup
-        })
-        .catch((error) => {
-            console.error('Error:', error.code, error.message);
-            alert(error.message);
-        });
+
+// ─── EMAIL SIGNUP ─────────────────────────────────────────────────────────────
+async function registerUser(email, password) {
+  if (!email || !password) return alert("Please fill in all fields.");
+  try {
+    const res = await fetch(`${SERVER}/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: email, email, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      saveUserLocally(data.user_id, email, email);
+      alert("Account created! Welcome :)");
+      window.location.replace("main.html");
+    } else {
+      alert(data.message || "Signup failed. Email may already be in use.");
+    }
+  } catch (err) {
+    console.error("Signup error:", err);
+    alert("Could not connect to server. Is it running?");
+  }
 }
 
-// Login function
-function signInUser(email, password) {
-    signInWithEmailAndPassword(auth, email, password)
-        .then((userCredetail) => {
-            console.log('Signed in:', userCredetail.user.email);
-            alert('Welcome back!');
-            window.location.replace("main.html");  // redirect after login
-        })
-        .catch((error) => {
-            console.error('Sign-in error:', error.code, error.message);
-            alert('Wrong user of password or your acount doesnt exsit' ,error.message);
-        });
+// ─── EMAIL LOGIN ──────────────────────────────────────────────────────────────
+async function signInUser(email, password) {
+  if (!email || !password) return alert("Please fill in all fields.");
+  try {
+    const res = await fetch(`${SERVER}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: email, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      saveUserLocally(data.user.id, data.user.email || email, data.user.username || email);
+      alert("Welcome back!");
+      window.location.replace("main.html");
+    } else {
+      alert("Wrong email or password, or account does not exist.");
+    }
+  } catch (err) {
+    console.error("Login error:", err);
+    alert("Could not connect to server. Is it running?");
+  }
 }
 
+// ─── WIRE UP FORMS ────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  
+
   const signupForm = document.getElementById('s_form');
   if (signupForm) {
     signupForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const email = document.getElementById('username_s').value;
+      const email    = document.getElementById('username_s').value.trim();
       const password = document.getElementById('password_s').value;
       registerUser(email, password);
     });
@@ -88,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const email = document.getElementById('username').value;
+      const email    = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
       signInUser(email, password);
     });

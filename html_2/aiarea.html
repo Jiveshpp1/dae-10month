@@ -16,9 +16,10 @@
     <h1>AI Chat</h1>
         <nav class="navbar">
             <ul>
-                <li><a href="https://chatgpt.com" target="_blank">ChatGPT</a></li>
                 <li><a href="landing.html">Landing</a></li>
-                <li><a href="ourstupidverystupidvision.html">Testing Grounds</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="signup.html">Sign Up</a></li>
             </ul>
         </nav>
     </header>
@@ -45,6 +46,16 @@
     </aside>
 
     <main class="chat-area">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div></div>
+            <div>
+                <label for="model-select" style="font-size:13px;color:#555;margin-right:5px;">Model:</label>
+                <select id="model-select" style="font-size:13px;padding:2px 6px;">
+                    <option value="gemini">Gemini</option>
+                    <option value="openrouter">OpenRouter</option>
+                </select>
+            </div>
+        </div>
         <div class="chat-window" id="chat-window">
             <div class="message user">
                 <div class="message-inner">

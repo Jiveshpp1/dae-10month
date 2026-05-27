@@ -1,4 +1,17 @@
-<h1>Study Dashboard</h1>
+<!-- ...existing code... -->
+<body>
+  <header>
+    <nav class="navbar">
+      <ul>
+        <li><a href="landing.html">Landing</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="aiarea.html">AI Area</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a href="signup.html">Sign Up</a></li>
+      </ul>
+    </nav>
+  </header>
+  <h1>Study Dashboard</h1>
 
 <div>
   <h2>Create Flashcard</h2>
@@ -10,6 +23,24 @@
 <div>
   <h2>Your Flashcards</h2>
   <div id="cards"></div>
+</div>
+
+<!-- Flashcard Lessons Section -->
+<div>
+  <h2>Flashcard Lessons</h2>
+  <input id="lesson-title" placeholder="Lesson Title">
+  <input id="lesson-desc" placeholder="Lesson Description">
+  <button onclick="createLesson()">Create Lesson</button>
+  <div id="lessons"></div>
+</div>
+
+<!-- Study Plans Section -->
+<div>
+  <h2>Study Plans</h2>
+  <input id="plan-title" placeholder="Plan Title">
+  <input id="plan-desc" placeholder="Plan Description">
+  <button onclick="createPlan()">Create Plan</button>
+  <div id="plans"></div>
 </div>
 
 <script src="dashboard.js"></script>

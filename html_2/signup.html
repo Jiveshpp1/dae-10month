@@ -1,93 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-
-    <link rel="stylesheet" href="iwant.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="iwant.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
 <header>
-    <h1>Signup</h1>
-    <nav class="navbar">
-        <ul>
-            <li><a href="https://chatgpt.com" target="_blank">ChatGPT</a></li>
-            <li><a href="landing.html">Landing</a></li>
-            <li><a href="ourstupidverystupidvision.html">Testing Grounds</a></li>
-            <li><a href="aiarea.html" target="_blank">Testing Grounds 2.0</a></li>
-        </ul>
-    </nav>
+  <h1>Sign Up</h1>
+  <nav class="navbar">
+    <ul>
+      <li><a href="landing.html">Landing</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="aiarea.html">AI Area</a></li>
+      <li><a href="login.html">Login</a></li>
+    </ul>
+  </nav>
 </header>
 
 <main class="page-center">
-    <section id="login-section">
-        <form class="login-form" id="s_form">
-            <label for="username" class="label-login">Username</label>
-            <input class="input-login" type="text" id="username_s" required>
+  <section id="login-section">
 
-            <label for="password" class="label-login">Password</label>
-            <input class="input-login" type="password" id="password_s" required>
-        <center>
-            <button type="submit" class="btn-login">Sign UP</button>
-            <br>
-            
-            <label class="remember">
-                <input type="checkbox"> Remember me
-            </label>
-            <div class="divider">
-            <span>or</span>
+    <form class="login-form" id="s_form">
+      <label class="label-login">Username / Email</label>
+      <input class="input-login" type="text" id="username_s" placeholder="you@email.com" required>
+
+      <label class="label-login">Password</label>
+      <input class="input-login" type="password" id="password_s" placeholder="Create a password" required>
+
+      <center>
+        <button type="submit" class="btn-login">Sign Up</button>
+        <br>
+        <label class="remember">
+          <input type="checkbox"> Remember me
+        </label>
+        <div class="divider"><span>or</span></div>
+        <div id="google-btn-container" style="margin: 10px auto; display:flex; justify-content:center;"></div>
+
+        <!-- Link back to login -->
+        <p style="margin-top:15px; font-size:14px; color:#aaa;">
+          Already have an account? <a href="login.html" style="color:#2ecc71; font-weight:600;">Log In</a>
+        </p>
+      </center>
+    </form>
+
+  </section>
+
+  <section id="features" class="features-section">
+    <div class="features-container">
+      <h2>Our Features</h2>
+      <div class="feature-list">
+        <div class="feature-card">
+          <h3>Personalized Study Plans</h3>
+          <p>Our AI creates answers based on your individual strengths and weaknesses, prioritizing essential topics for focused review.</p>
         </div>
-            <button type="button" class="google-login" onclick="signInWithGoogle()">
-                <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
-                Continue with Google
-            </button>
-        </center>
-        </form>
-    </section>
-       <section id="features" class="features-section">
-            <div class="features-container">
-                <h2>Our Features</h2>
-                <div class="feature-list">
-                    <div class="feature-card">
-                        <h3>Personalized Study Plans</h3>
-                        <p>Our AI creates a answers based on your individual strengths and weaknesses, prioritizing essential topics for focused review.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>Intelligent Practice Quizzes</h3>
-                        <p>Enhance your knowledge retention with quizzes that adapt to your performance, providing instant feedback and targeted review sessions.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>Automated Flashcard Generation</h3>
-                        <p>Effortlessly create flashcards from your notes and textbooks. The AI organizes them into a proven, spaced-repetition system for effective memorization.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <div class="feature-card">
+          <h3>Intelligent Practice Quizzes</h3>
+          <p>Enhance your knowledge retention with quizzes that adapt to your performance, providing instant feedback and targeted review sessions.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Automated Flashcard Generation</h3>
+          <p>Effortlessly create flashcards from your notes and textbooks. The AI organizes them into a proven, spaced-repetition system for effective memorization.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 
-<div id="g_id_onload"
-     data-client_id="1092891072334-57cccvf9dapcs6tqdjit161ii1trf6k1.apps.googleusercontent.com"
-     data-callback="handleLogin">
-</div>
+<!-- ✅ Script at bottom of body -->
+<script src="login.js" type="module"></script>
 
-<script>
-function handleLogin(response) {
-  fetch("http://localhost:3000/google-login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: response.credential })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log("Logged in:", data);
-    window.location.href = "dashboard.html";
-  });
-}
-</script>
 </body>
 </html>
-<script src="login.js" type="module"></script>

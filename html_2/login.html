@@ -1,72 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <script type="module" src="login.js"></script>
-    <link rel="stylesheet" href="iwant.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="iwant.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
 <header>
-    <h1>Login</h1>
-    <nav class="navbar">
-        <ul>
-            <li><a href="https://chatgpt.com" target="_blank">ChatGPT</a></li>
-            <li><a href="landing.html">Landing</a></li>
-            <li><a href="ourstupidverystupidvision.html">Testing Grounds</a></li>
-            <li><a href="aiarea.html" target="_blank">Testing Grounds 2.0</a></li>
-        </ul>
-    </nav>
+  <h1>Login</h1>
+  <nav class="navbar">
+    <ul>
+      <li><a href="landing.html">Landing</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="aiarea.html">AI Area</a></li>
+      <li><a href="signup.html">Sign Up</a></li>
+    </ul>
+  </nav>
 </header>
 
 <main class="page-center">
-    <section id="login-section">
-        <form class="login-form" id="l-form">
-            <label for="username" class="label-login">Username</label>
-            <input class="input-login" type="text" id="username" required>
+  <section id="login-section">
 
-            <label for="password" class="label-login">Password</label>
-            <input class="input-login" type="password" id="password" required>
-            <center>
-            <button type="submit" class="btn-login">Login</button>
-            <br>
-            
-            <label class="remember">
-                <input type="checkbox"> Remember me
-            </label>
-            <div class="divider">
-            <span>or</span>
+    <!-- ✅ Fixed form id: was l-form, must be l_form to match login.js -->
+    <form class="login-form" id="l_form">
+      <label class="label-login">Username / Email</label>
+      <input class="input-login" type="text" id="username" placeholder="you@email.com" required>
+
+      <label class="label-login">Password</label>
+      <input class="input-login" type="password" id="password" placeholder="Your password" required>
+
+      <center>
+        <button type="submit" class="btn-login">Log In</button>
+        <br>
+        <label class="remember">
+          <input type="checkbox"> Remember me
+        </label>
+        <div class="divider"><span>or</span></div>
+        <div id="google-btn-container" style="margin: 10px auto; display:flex; justify-content:center;"></div>
+
+        <!-- Link to signup page -->
+        <p style="margin-top:15px; font-size:14px; color:#aaa;">
+          Don't have an account? <a href="signup.html" style="color:#2ecc71; font-weight:600;">Sign Up</a>
+        </p>
+      </center>
+    </form>
+
+  </section>
+
+  <section id="features" class="features-section">
+    <div class="features-container">
+      <h2>Our Features</h2>
+      <div class="feature-list">
+        <div class="feature-card">
+          <h3>Personalized Study Plans</h3>
+          <p>Our AI creates answers based on your individual strengths and weaknesses, prioritizing essential topics for focused review.</p>
         </div>
-            <button type="button" class="google-login" onclick="signInWithGoogle()">
-                <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
-                Continue with Google
-            </button>
-        </center>
-        </form>
-    </section>
-       <section id="features" class="features-section">
-            <div class="features-container">
-                <h2>Our Features</h2>
-                <div class="feature-list">
-                    <div class="feature-card">
-                        <h3>Personalized Study Plans</h3>
-                        <p>Our AI creates a answers based on your individual strengths and weaknesses, prioritizing essential topics for focused review.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>Intelligent Practice Quizzes</h3>
-                        <p>Enhance your knowledge retention with quizzes that adapt to your performance, providing instant feedback and targeted review sessions.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>Automated Flashcard Generation</h3>
-                        <p>Effortlessly create flashcards from your notes and textbooks. The AI organizes them into a proven, spaced-repetition system for effective memorization.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <div class="feature-card">
+          <h3>Intelligent Practice Quizzes</h3>
+          <p>Enhance your knowledge retention with quizzes that adapt to your performance, providing instant feedback and targeted review sessions.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Automated Flashcard Generation</h3>
+          <p>Effortlessly create flashcards from your notes and textbooks. The AI organizes them into a proven, spaced-repetition system for effective memorization.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
+
+<!-- ✅ Script MUST be at bottom of body, NOT in <head>, for type="module" to work -->
+<script src="login.js" type="module"></script>
 
 </body>
 </html>
