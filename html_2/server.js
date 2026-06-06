@@ -1,127 +1,98 @@
+require("dotenv").config();
+
 const express = require("express");
-const mysql = require("mysql2");
-const cors = require("cors");
-const fetch = require("node-fetch");
+const mysql   = require("mysql2");
+const cors    = require("cors");
+const fetch   = require("node-fetch");
 const { OAuth2Client } = require("google-auth-library");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(__dirname));
 
-/* =========================
-   GOOGLE AUTH CLIENT
-========================= */
 const client = new OAuth2Client(
   "1092891072334-57cccvf9dapcs6tqdjit161ii1trf6k1.apps.googleusercontent.com"
 );
 
 /* =========================
-   MYSQL CONNECTION
-   ⚠️ Change password/port to match your setup
-   Mac MAMP default port = 8889
-   Regular MySQL default port = 3306
+   MYSQL
 ========================= */
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "root",       // ← your MySQL password
+  host:     "localhost",
+  user:     "root",
+  password: "root",
   database: "study_app_db",
-  port: 8889              // ← change to 3306 if not using MAMP
+  port:     8889
 });
 
 db.connect((err) => {
-  if (err) {
-    console.error("MySQL connection failed:", err.message);
-  } else {
-    console.log("✅ MySQL Connected to study_app_db");
-  }
+  if (err) console.error("❌ MySQL connection failed:", err.message);
+  else     console.log("✅ MySQL Connected to study_app_db");
 });
 
 /* =========================
    HEALTH CHECK
 ========================= */
-app.get("/", (req, res) => {
-  res.send("✅ Server is alive");
-});
+app.get("/", (req, res) => res.send("✅ Server is alive"));
 
 /* =========================
    GOOGLE LOGIN
-   Verifies Firebase/Google token,
-   saves user to DB if new
 ========================= */
 app.post("/google-login", async (req, res) => {
   const { token } = req.body;
-
   try {
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: "1092891072334-57cccvf9dapcs6tqdjit161ii1trf6k1.apps.googleusercontent.com"
     });
+    const { sub: google_id, email, name: username } = ticket.getPayload();
 
-    const payload = ticket.getPayload();
-    const google_id = payload.sub;
-    const email = payload.email;
-    const username = payload.name;
+    db.query("SELECT * FROM users WHERE google_id = ?", [google_id], (err, result) => {
+      if (err) return res.json({ success: false, error: err.message });
 
-    db.query(
-      "SELECT * FROM users WHERE google_id = ?",
-      [google_id],
-      (err, result) => {
-        if (err) return res.json({ success: false, error: err.message });
-
-        if (result.length === 0) {
-          // New user — insert them
-          db.query(
-            "INSERT INTO users (google_id, username, email) VALUES (?, ?, ?)",
-            [google_id, username, email],
-            (insertErr) => {
-              if (insertErr) console.error("Insert error:", insertErr.message);
-            }
-          );
-        }
-
-        res.json({ success: true, user: { google_id, email, username } });
+      if (result.length === 0) {
+        db.query(
+          "INSERT INTO users (google_id, username, email) VALUES (?, ?, ?)",
+          [google_id, username, email],
+          (insertErr, insertResult) => {
+            if (insertErr) return res.json({ success: false, error: insertErr.message });
+            res.json({ success: true, user: { id: insertResult.insertId, google_id, email, username } });
+          }
+        );
+      } else {
+        res.json({ success: true, user: { id: result[0].id, google_id, email, username } });
       }
-    );
-
+    });
   } catch (err) {
-    console.error("Google login error:", err.message);
     res.json({ success: false, error: err.message });
   }
 });
 
 /* =========================
-   EMAIL / PASSWORD LOGIN
-   Basic login — matches username + password in DB
+   EMAIL LOGIN
 ========================= */
 app.post("/auth/login", (req, res) => {
   const { username, password } = req.body;
-
   if (!username || !password)
-    return res.json({ success: false, message: "Missing username or password" });
+    return res.json({ success: false, message: "Missing fields" });
 
   db.query(
     "SELECT * FROM users WHERE username = ? AND password = ?",
     [username, password],
     (err, result) => {
       if (err) return res.json({ success: false, error: err.message });
-
-      if (result.length > 0) {
-        res.json({ success: true, user: result[0] });
-      } else {
-        res.json({ success: false, message: "Invalid credentials" });
-      }
+      if (result.length > 0) res.json({ success: true, user: result[0] });
+      else res.json({ success: false, message: "Invalid credentials" });
     }
   );
 });
 
 /* =========================
-   EMAIL / PASSWORD SIGNUP
-   Registers a new user
+   EMAIL SIGNUP
 ========================= */
 app.post("/auth/signup", (req, res) => {
   const { username, email, password } = req.body;
-
   if (!username || !password)
     return res.json({ success: false, message: "Missing fields" });
 
@@ -129,85 +100,70 @@ app.post("/auth/signup", (req, res) => {
     "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
     [username, email || null, password],
     (err, result) => {
-      if (err) {
-        return res.json({ success: false, message: "User already exists or DB error", error: err.message });
-      }
+      if (err) return res.json({ success: false, message: "User already exists", error: err.message });
       res.json({ success: true, user_id: result.insertId });
     }
   );
 });
 
 /* =========================
-   GET USER BY GOOGLE ID
+   GET USER
 ========================= */
 app.get("/user/:google_id", (req, res) => {
-  db.query(
-    "SELECT * FROM users WHERE google_id = ?",
-    [req.params.google_id],
-    (err, result) => {
-      if (err) return res.json({ error: err.message });
-      if (!result[0]) return res.status(404).json({ message: "User not found" });
-      res.json(result[0]);
-    }
-  );
+  db.query("SELECT * FROM users WHERE google_id = ?", [req.params.google_id], (err, result) => {
+    if (err) return res.json({ error: err.message });
+    if (!result[0]) return res.status(404).json({ message: "User not found" });
+    res.json(result[0]);
+  });
 });
 
 /* =========================
-   CHAT
-   Saves prompt + AI response to chats table
-   Uses your Gemini key on the frontend —
-   this route just saves the history to DB
+   CHAT — OpenRouter auto
 ========================= */
-app.post("/chat", (req, res) => {
-  const { user_id, prompt, response } = req.body;
+app.post("/chat", async (req, res) => {
+  const { user_id, prompt, history = [] } = req.body;
+  if (!prompt) return res.json({ error: "No prompt provided" });
 
-  // If frontend sends both prompt + response (from Gemini), just save it
-  if (user_id && prompt && response) {
-    db.query(
-      "INSERT INTO chats (user_id, prompt, response) VALUES (?, ?, ?)",
-      [user_id, prompt, response],
-      (err) => {
-        if (err) return res.json({ success: false, error: err.message });
-        res.json({ success: true });
-      }
-    );
-    return;
-  }
+  try {
+    const messages = history.map(m => ({
+      role: m.role === "user" ? "user" : "assistant",
+      content: m.text || m.html || ""
+    }));
+    messages.push({ role: "user", content: prompt });
 
-  // If you want the server to call OpenRouter instead, use this block
-  // and add your key below
-  const OPENROUTER_KEY = "YOUR_OPENROUTER_KEY"; // ← paste key here if using
+    const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "http://localhost:5500",
+        "X-Title": "Dookie AI Study App"
+      },
+      body: JSON.stringify({ model: "openrouter/auto", messages })
+    });
 
-  fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${OPENROUTER_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: "openrouter/auto",
-      messages: [{ role: "user", content: prompt }]
-    })
-  })
-    .then(r => r.json())
-    .then(data => {
-      if (!data.choices) return res.json({ error: "No response from AI", raw: data });
+    const data = await orRes.json();
+    const reply = data.choices?.[0]?.message?.content;
+    if (!reply) throw new Error(data.error?.message || "No response from OpenRouter");
 
-      const reply = data.choices[0].message.content;
-
+    if (user_id) {
       db.query(
         "INSERT INTO chats (user_id, prompt, response) VALUES (?, ?, ?)",
         [user_id, prompt, reply],
-        (err) => { if (err) console.error("Chat save error:", err.message); }
+        (err) => { if (err) console.error("Chat DB error:", err.message); }
       );
+    }
 
-      res.json({ reply });
-    })
-    .catch(err => res.json({ error: err.message }));
+    res.json({ reply });
+
+  } catch (err) {
+    console.error("Chat error:", err.message);
+    res.json({ error: err.message });
+  }
 });
 
 /* =========================
-   GET CHAT HISTORY
+   CHAT HISTORY
 ========================= */
 app.get("/chat/:user_id", (req, res) => {
   db.query(
@@ -221,17 +177,97 @@ app.get("/chat/:user_id", (req, res) => {
 });
 
 /* =========================
+   CHAT SESSIONS — CREATE
+========================= */
+app.post("/chat-sessions", (req, res) => {
+  const { user_id, session_name } = req.body;
+  if (!user_id || !session_name)
+    return res.json({ success: false, error: "Missing fields" });
+
+  db.query(
+    "INSERT INTO chat_sessions (user_id, session_name) VALUES (?, ?)",
+    [user_id, session_name],
+    (err, result) => {
+      if (err) return res.json({ success: false, error: err.message });
+      res.json({ success: true, session_id: result.insertId });
+    }
+  );
+});
+
+/* =========================
+   CHAT SESSIONS — GET ALL FOR USER
+========================= */
+app.get("/chat-sessions/:user_id", (req, res) => {
+  db.query(
+    "SELECT * FROM chat_sessions WHERE user_id = ? ORDER BY created_at DESC",
+    [req.params.user_id],
+    (err, result) => {
+      if (err) return res.json({ error: err.message });
+      res.json(result);
+    }
+  );
+});
+
+/* =========================
+   CHAT SESSIONS — UPDATE NAME
+========================= */
+app.put("/chat-sessions/:session_id", (req, res) => {
+  const { session_name } = req.body;
+  if (!session_name) return res.json({ success: false, error: "Missing session_name" });
+
+  db.query(
+    "UPDATE chat_sessions SET session_name = ? WHERE id = ?",
+    [session_name, req.params.session_id],
+    (err) => {
+      if (err) return res.json({ success: false, error: err.message });
+      res.json({ success: true });
+    }
+  );
+});
+
+/* =========================
+   CHAT SESSIONS — GET CHATS
+========================= */
+app.get("/chat-sessions/:session_id/chats", (req, res) => {
+  db.query(
+    "SELECT * FROM chats WHERE session_id = ? ORDER BY id ASC",
+    [req.params.session_id],
+    (err, result) => {
+      if (err) return res.json({ error: err.message });
+      res.json(result);
+    }
+  );
+});
+
+/* =========================
+   CHAT SESSIONS — ADD CHAT
+========================= */
+app.post("/chat-sessions/:session_id/chats", (req, res) => {
+  const { user_id, prompt, response } = req.body;
+  if (!user_id || !prompt || !response)
+    return res.json({ success: false, error: "Missing fields" });
+
+  db.query(
+    "INSERT INTO chats (user_id, prompt, response, session_id) VALUES (?, ?, ?, ?)",
+    [user_id, prompt, response, req.params.session_id],
+    (err) => {
+      if (err) return res.json({ success: false, error: err.message });
+      res.json({ success: true });
+    }
+  );
+});
+
+/* =========================
    FLASHCARDS — CREATE
 ========================= */
 app.post("/flashcards", (req, res) => {
-  const { user_id, title, content } = req.body;
-
+  const { user_id, title, content, class_id } = req.body;
   if (!user_id || !title || !content)
     return res.json({ success: false, message: "Missing fields" });
 
   db.query(
-    "INSERT INTO flashcards (user_id, title, content) VALUES (?, ?, ?)",
-    [user_id, title, content],
+    "INSERT INTO flashcards (user_id, title, content, class_id) VALUES (?, ?, ?, ?)",
+    [user_id, title, content, class_id || null],
     (err, result) => {
       if (err) return res.json({ success: false, error: err.message });
       res.json({ success: true, id: result.insertId });
@@ -240,7 +276,7 @@ app.post("/flashcards", (req, res) => {
 });
 
 /* =========================
-   FLASHCARDS — GET ALL FOR USER
+   FLASHCARDS — GET FOR USER
 ========================= */
 app.get("/flashcards/:user_id", (req, res) => {
   db.query(
@@ -257,18 +293,14 @@ app.get("/flashcards/:user_id", (req, res) => {
    FLASHCARDS — DELETE
 ========================= */
 app.delete("/flashcards/:id", (req, res) => {
-  db.query(
-    "DELETE FROM flashcards WHERE id = ?",
-    [req.params.id],
-    (err) => {
-      if (err) return res.json({ success: false, error: err.message });
-      res.json({ success: true });
-    }
-  );
+  db.query("DELETE FROM flashcards WHERE id = ?", [req.params.id], (err) => {
+    if (err) return res.json({ success: false, error: err.message });
+    res.json({ success: true });
+  });
 });
 
 /* =========================
-   FLASHCARD LESSONS — CREATE
+   LESSONS — CREATE
 ========================= */
 app.post("/lessons", (req, res) => {
   const { user_id, title, description } = req.body;
@@ -286,7 +318,7 @@ app.post("/lessons", (req, res) => {
 });
 
 /* =========================
-   FLASHCARD LESSONS — GET ALL FOR USER
+   LESSONS — GET FOR USER
 ========================= */
 app.get("/lessons/:user_id", (req, res) => {
   db.query(
@@ -300,31 +332,25 @@ app.get("/lessons/:user_id", (req, res) => {
 });
 
 /* =========================
-   FLASHCARD LESSONS — DELETE
+   LESSONS — DELETE
 ========================= */
 app.delete("/lessons/:id", (req, res) => {
-  db.query(
-    "DELETE FROM lessons WHERE id = ?",
-    [req.params.id],
-    (err) => {
-      if (err) return res.json({ success: false, error: err.message });
-      res.json({ success: true });
-    }
-  );
+  db.query("DELETE FROM lessons WHERE id = ?", [req.params.id], (err) => {
+    if (err) return res.json({ success: false, error: err.message });
+    res.json({ success: true });
+  });
 });
 
 /* =========================
-   FLASHCARDS — ASSIGN TO LESSON
+   LESSONS — ASSIGN FLASHCARD
 ========================= */
 app.post("/lessons/:lesson_id/flashcards", (req, res) => {
   const { flashcard_id } = req.body;
-  const lesson_id = req.params.lesson_id;
-  if (!lesson_id || !flashcard_id)
-    return res.json({ success: false, message: "Missing fields" });
+  if (!flashcard_id) return res.json({ success: false, message: "Missing flashcard_id" });
 
   db.query(
     "UPDATE flashcards SET lesson_id = ? WHERE id = ?",
-    [lesson_id, flashcard_id],
+    [req.params.lesson_id, flashcard_id],
     (err) => {
       if (err) return res.json({ success: false, error: err.message });
       res.json({ success: true });
@@ -333,7 +359,7 @@ app.post("/lessons/:lesson_id/flashcards", (req, res) => {
 });
 
 /* =========================
-   FLASHCARDS — GET BY LESSON
+   LESSONS — GET FLASHCARDS
 ========================= */
 app.get("/lessons/:lesson_id/flashcards", (req, res) => {
   db.query(
@@ -344,6 +370,48 @@ app.get("/lessons/:lesson_id/flashcards", (req, res) => {
       res.json(result);
     }
   );
+});
+
+/* =========================
+   CLASSES — CREATE
+========================= */
+app.post("/classes", (req, res) => {
+  const { user_id, class_name, description, color } = req.body;
+  if (!user_id || !class_name)
+    return res.json({ success: false, message: "Missing fields" });
+
+  db.query(
+    "INSERT INTO classes (user_id, class_name, description, color) VALUES (?, ?, ?, ?)",
+    [user_id, class_name, description || "", color || "#459b71"],
+    (err, result) => {
+      if (err) return res.json({ success: false, error: err.message });
+      res.json({ success: true, id: result.insertId });
+    }
+  );
+});
+
+/* =========================
+   CLASSES — GET FOR USER
+========================= */
+app.get("/classes/:user_id", (req, res) => {
+  db.query(
+    "SELECT * FROM classes WHERE user_id = ? ORDER BY created_at DESC",
+    [req.params.user_id],
+    (err, result) => {
+      if (err) return res.json({ error: err.message });
+      res.json(result);
+    }
+  );
+});
+
+/* =========================
+   CLASSES — DELETE
+========================= */
+app.delete("/classes/:id", (req, res) => {
+  db.query("DELETE FROM classes WHERE id = ?", [req.params.id], (err) => {
+    if (err) return res.json({ success: false, error: err.message });
+    res.json({ success: true });
+  });
 });
 
 /* =========================
@@ -365,7 +433,7 @@ app.post("/plans", (req, res) => {
 });
 
 /* =========================
-   STUDY PLANS — GET ALL FOR USER
+   STUDY PLANS — GET FOR USER
 ========================= */
 app.get("/plans/:user_id", (req, res) => {
   db.query(
@@ -382,14 +450,118 @@ app.get("/plans/:user_id", (req, res) => {
    STUDY PLANS — DELETE
 ========================= */
 app.delete("/plans/:id", (req, res) => {
+  db.query("DELETE FROM study_plans WHERE id = ?", [req.params.id], (err) => {
+    if (err) return res.json({ success: false, error: err.message });
+    res.json({ success: true });
+  });
+});
+
+/* =========================
+   LESSON PLANS — CREATE
+========================= */
+app.post("/lesson-plans", (req, res) => {
+  const { user_id, title, content, class_id } = req.body;
+  if (!user_id || !title || !content)
+    return res.json({ success: false, message: "Missing fields" });
+
   db.query(
-    "DELETE FROM study_plans WHERE id = ?",
-    [req.params.id],
-    (err) => {
+    "INSERT INTO lesson_plans (user_id, title, content, class_id) VALUES (?, ?, ?, ?)",
+    [user_id, title, content, class_id || null],
+    (err, result) => {
       if (err) return res.json({ success: false, error: err.message });
-      res.json({ success: true });
+      res.json({ success: true, id: result.insertId });
     }
   );
+});
+
+/* =========================
+   LESSON PLANS — GET FOR USER
+========================= */
+app.get("/lesson-plans/:user_id", (req, res) => {
+  db.query(
+    "SELECT * FROM lesson_plans WHERE user_id = ? ORDER BY created_at DESC",
+    [req.params.user_id],
+    (err, result) => {
+      if (err) return res.json({ error: err.message });
+      res.json(result);
+    }
+  );
+});
+
+/* =========================
+   LESSON PLANS — GET ONE
+========================= */
+app.get("/lesson-plans/:id/view", (req, res) => {
+  db.query("SELECT * FROM lesson_plans WHERE id = ?", [req.params.id], (err, result) => {
+    if (err) return res.json({ error: err.message });
+    res.json(result[0] || {});
+  });
+});
+
+/* =========================
+   LESSON PLANS — DELETE
+========================= */
+app.delete("/lesson-plans/:id", (req, res) => {
+  db.query("DELETE FROM lesson_plans WHERE id = ?", [req.params.id], (err) => {
+    if (err) return res.json({ success: false, error: err.message });
+    res.json({ success: true });
+  });
+});
+
+/* =========================
+   STUDY GUIDES — CREATE
+========================= */
+app.post("/study-guides", (req, res) => {
+  const { user_id, class_id, title, content } = req.body;
+  if (!user_id || !title || !content)
+    return res.json({ success: false, message: "Missing fields" });
+
+  db.query(
+    "INSERT INTO study_guides (user_id, class_id, title, content) VALUES (?, ?, ?, ?)",
+    [user_id, class_id || null, title, content],
+    (err, result) => {
+      if (err) return res.json({ success: false, error: err.message });
+      res.json({ success: true, id: result.insertId });
+    }
+  );
+});
+
+/* =========================
+   STUDY GUIDES — GET FOR USER
+========================= */
+app.get("/study-guides/:user_id", (req, res) => {
+  db.query(
+    "SELECT * FROM study_guides WHERE user_id = ? ORDER BY created_at DESC",
+    [req.params.user_id],
+    (err, result) => {
+      if (err) return res.json({ error: err.message });
+      res.json(result);
+    }
+  );
+});
+
+/* =========================
+   STUDY GUIDES — GET FOR CLASS
+========================= */
+app.get("/study-guides/class/:class_id", (req, res) => {
+  db.query(
+    "SELECT * FROM study_guides WHERE class_id = ? ORDER BY created_at DESC",
+    [req.params.class_id],
+    (err, result) => {
+      if (err) return res.json({ error: err.message });
+      res.json(result);
+    }
+  );
+});
+
+/* =========================
+   STUDY GUIDES — DELETE
+========================= */
+app.delete("/study-guides/:id", (req, res) => {
+  db.query("DELETE FROM study_guides WHERE id = ?", [req.params.id], (err) => {
+    if (err) return res.json({ success: false, error: err.message });
+    res.json({ success: true });
+  });
 });
 
 /* =========================
@@ -397,7 +569,6 @@ app.delete("/plans/:id", (req, res) => {
 ========================= */
 app.post("/quiz", (req, res) => {
   const { user_id, score, total } = req.body;
-
   if (!user_id || score == null || !total)
     return res.json({ success: false, message: "Missing fields" });
 
@@ -412,7 +583,7 @@ app.post("/quiz", (req, res) => {
 });
 
 /* =========================
-   QUIZ — GET SCORES FOR USER
+   QUIZ — GET FOR USER
 ========================= */
 app.get("/quiz/:user_id", (req, res) => {
   db.query(
@@ -448,6 +619,6 @@ app.post("/students", (req, res) => {
 });
 
 /* =========================
-   START SERVER
+   START
 ========================= */
 app.listen(3000, () => console.log("🚀 Server running on http://localhost:3000"));

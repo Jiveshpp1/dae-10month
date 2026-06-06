@@ -292,3 +292,18 @@ textarea {
     overflow-y: hidden;
     padding: 10px 0;
 }
+
+/* Animation for AI generating indicator */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* Stop button styling */
+.stop-btn {
+    background: #e74c3c !important;
+}

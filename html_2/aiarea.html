@@ -18,8 +18,9 @@
             <ul>
                 <li><a href="landing.html">Landing</a></li>
                 <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="aiarea.html" class="active">AI Chat</a></li>
                 <li><a href="login.html">Login</a></li>
-                <li><a href="signup.html">Sign Up</a></li>
+                <li><a href="#" id="signout-link">Sign Out</a></li>
             </ul>
         </nav>
     </header>
@@ -40,14 +41,19 @@
         <div class="sidebar-footer">
             <div class="user-profile">
                 <div class="avatar">U</div>
-                <span>User Name</span>
+                <span id="user-status">Checking login...</span>
             </div>
         </div>
     </aside>
 
     <main class="chat-area">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <div></div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <h2 id="current-chat-name" style="margin:0;font-size:18px;">Chat</h2>
+                <button id="rename-chat-btn" title="Rename chat" style="background:none;border:none;cursor:pointer;font-size:14px;">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
             <div>
                 <label for="model-select" style="font-size:13px;color:#555;margin-right:5px;">Model:</label>
                 <select id="model-select" style="font-size:13px;padding:2px 6px;">
@@ -92,6 +98,16 @@
                 <button id="submit-button" class="send-btn" title="Send">
                     <i class="fas fa-arrow-up"></i>
                 </button>
+                
+                <button id="stop-button" class="send-btn stop-btn" title="Stop" style="display:none;background:#e74c3c;">
+                    <i class="fas fa-stop"></i>
+                </button>
+            </div>
+            
+            <!-- Uploaded Files Display -->
+            <div id="uploaded-files" class="uploaded-files" style="display:none;margin:8px 0;padding:8px;background:#f5f5f5;border-radius:6px;">
+                <div style="font-size:12px;color:#666;margin-bottom:4px;"><i class="fas fa-file"></i> Attached Files:</div>
+                <div id="files-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
             </div>
         </center>
         <footer class="input-container">
@@ -100,6 +116,43 @@
     </main>
 </div>
 
+<!-- Sign Out Modal -->
+<div id="signout-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#222;padding:30px 20px;border-radius:8px;max-width:300px;margin:auto;text-align:center;">
+    <p style="color:#fff;">Are you sure you want to sign out?</p>
+    <button id="signout-confirm" style="background:#e74c3c;color:#fff;padding:8px 18px;border:none;border-radius:4px;margin-right:10px;cursor:pointer;">Sign Out</button>
+    <button id="signout-cancel" style="background:#2ecc71;color:#fff;padding:8px 18px;border:none;border-radius:4px;cursor:pointer;">Cancel</button>
+  </div>
+</div>
+
 </body>
 </html>
 <script src="aiarea.js" type="module"></script>
+<script>
+  (function(){
+    const userStatus = document.getElementById('user-status');
+    const signoutLink = document.getElementById('signout-link');
+    const modal = document.getElementById('signout-modal');
+    const confirm = document.getElementById('signout-confirm');
+    const cancel = document.getElementById('signout-cancel');
+    const userId = localStorage.getItem('user_id');
+    const userName = localStorage.getItem('user_name');
+
+    if (userId && userName) {
+      userStatus.textContent = "Logged in as " + userName;
+      if (signoutLink) signoutLink.textContent = `Sign Out (${userName})`;
+    } else {
+      userStatus.textContent = "Not logged in";
+      if (signoutLink) signoutLink.style.display = 'none';
+    }
+
+    if (!signoutLink) return;
+    signoutLink.addEventListener('click', (e)=>{
+      e.preventDefault();
+      modal.style.display = 'flex';
+      modal.querySelector('p').textContent = userName ? `Are you sure you want to sign out of ${userName}?` : 'Are you sure you want to sign out?';
+    });
+    cancel.addEventListener('click', ()=> modal.style.display = 'none');
+    confirm.addEventListener('click', ()=> { localStorage.clear(); window.location.href = "landing.html"; });
+  })();
+</script>

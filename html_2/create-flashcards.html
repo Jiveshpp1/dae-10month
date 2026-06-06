@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Flashcards — AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --green:       #2ecc71;
+            --green-dim:   #459b71;
+            --green-dark:  #1a3a2a;
+            --bg:          #0d0d0d;
+            --surface:     #141414;
+            --surface2:    #1c1c1c;
+            --border:      #2a2a2a;
+            --text:        #e0e0e0;
+            --muted:       #666;
+            --red:         #e74c3c;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* ── NAV ── */
+        nav {
+            background: #0a0a0a;
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 52px;
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+        nav .brand { color: var(--green); font-weight: 700; font-size: 16px; text-decoration: none; }
+        nav ul { list-style: none; display: flex; gap: 4px; }
+        nav ul li a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: color .2s, background .2s;
+        }
+        nav ul li a:hover { color: var(--text); background: var(--surface2); }
+
+        /* ── LAYOUT ── */
+        .page {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 32px 20px 120px;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+        }
+        .page-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--green);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .back-link {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color .2s;
+        }
+        .back-link:hover { color: var(--green); }
+
+        /* ── CARDS ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--green-dim);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ── DROP ZONE ── */
+        .dropzone {
+            border: 2px dashed var(--border);
+            border-radius: 10px;
+            padding: 28px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color .2s, background .2s;
+        }
+        .dropzone:hover, .dropzone.drag-over {
+            border-color: var(--green-dim);
+            background: rgba(46,204,113,.04);
+        }
+        .dropzone i { font-size: 32px; color: var(--green-dim); margin-bottom: 8px; display: block; }
+        .dropzone p { font-size: 14px; color: var(--muted); }
+        .dropzone small { font-size: 12px; color: #444; }
+
+        .file-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .file-chip {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 4px 10px 4px 12px;
+            font-size: 12px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .file-chip button {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 0;
+            font-size: 12px;
+            line-height: 1;
+            transition: color .2s;
+        }
+        .file-chip button:hover { color: var(--red); }
+
+        /* ── INPUTS ── */
+        textarea, select, input[type="number"] {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color .2s;
+            outline: none;
+        }
+        textarea { resize: vertical; min-height: 90px; }
+        textarea:focus, select:focus, input[type="number"]:focus {
+            border-color: var(--green-dim);
+        }
+        textarea::placeholder { color: #444; }
+
+        .settings-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .settings-row label { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+        .settings-row select, .settings-row input[type="number"] { width: auto; flex: 1; min-width: 120px; }
+        .settings-row input[type="number"] { max-width: 80px; }
+
+        /* ── GENERATE BUTTON (fixed) ── */
+        #generate-btn {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 48px);
+            max-width: 500px;
+            background: var(--green);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 24px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 4px 24px rgba(46,204,113,.35);
+            transition: background .2s, box-shadow .2s, transform .15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        #generate-btn:hover { background: #27ae60; box-shadow: 0 6px 28px rgba(46,204,113,.5); }
+        #generate-btn:disabled { background: #333; color: var(--muted); box-shadow: none; cursor: not-allowed; }
+
+        /* ── RESULTS ── */
+        #results-section { display: none; }
+
+        .flashcard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .flashcard {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            cursor: pointer;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: border-color .2s, background .2s;
+            position: relative;
+        }
+        .flashcard:hover { border-color: var(--green-dim); background: #1f1f1f; }
+        .flashcard-front { color: var(--green); font-weight: 600; font-size: 14px; line-height: 1.4; }
+        .flashcard-back { color: var(--text); font-size: 13px; line-height: 1.5; display: none; }
+        .flip-hint {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            font-size: 10px;
+            color: #444;
+        }
+
+        /* ── SAVE BTN ── */
+        .save-btn {
+            width: 100%;
+            background: var(--green-dark);
+            color: var(--green);
+            border: 1px solid var(--green-dim);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .2s, color .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .save-btn:hover { background: var(--green); color: #000; }
+        .save-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+        /* ── MESSAGES ── */
+        #message { margin-bottom: 16px; min-height: 0; }
+        .msg {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .msg.success { background: rgba(46,204,113,.1); border: 1px solid rgba(46,204,113,.3); color: var(--green); }
+        .msg.error   { background: rgba(231,76,60,.1);  border: 1px solid rgba(231,76,60,.3);  color: var(--red); }
+
+        /* ── SPINNER ── */
+        .spinner {
+            width: 16px; height: 16px;
+            border: 2px solid rgba(0,0,0,.2);
+            border-top-color: #000;
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="dashboard.html" class="brand">StudyAI</a>
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="aiarea.html">AI Area</a></li>
+        <li><a href="#" id="signout-link">Sign Out</a></li>
+    </ul>
+</nav>
+
+<div class="page">
+    <div class="page-header">
+        <h1><i class="fas fa-layer-group"></i> Generate Flashcards</h1>
+        <a href="dashboard.html" class="back-link"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+
+    <div id="message"></div>
+
+    <div class="card">
+        <div class="card-title"><i class="fas fa-upload"></i> Upload Files <span style="color:#444;font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+        <div class="dropzone" id="dropzone">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Drag files here or click to browse</p>
+            <small>.txt · .pdf · .doc · code files</small>
+        </div>
+        <div class="file-chips" id="file-chips"></div>
+        <input type="file" id="file-input" hidden multiple>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><i class="fas fa-pen"></i> Topic or Content</div>
+        <textarea id="content-input" placeholder="e.g. 'Biology: Photosynthesis' or paste your notes here…"></textarea>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><i class="fas fa-sliders"></i> Settings</div>
+        <select id="class-id" style="margin-bottom:0">
+            <option value="">📚 No class (optional)</option>
+        </select>
+        <div class="settings-row">
+            <label>
+                <input type="number" id="num-cards" value="5" min="1" max="20">
+                cards
+            </label>
+            <label>
+                <select id="difficulty">
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate" selected>Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                </select>
+                difficulty
+            </label>
+        </div>
+    </div>
+
+    <div class="card" id="results-section">
+        <div class="card-title"><i class="fas fa-layer-group"></i> Generated Flashcards <span id="card-count" style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0"></span></div>
+        <div class="flashcard-grid" id="flashcard-container"></div>
+        <button class="save-btn" id="save-btn">
+            <i class="fas fa-floppy-disk"></i> Save All Flashcards
+        </button>
+    </div>
+</div>
+
+<button id="generate-btn">
+    <i class="fas fa-wand-magic-sparkles"></i> Generate Flashcards
+</button>
+
+<script src="create-flashcards.js" type="module"></script>
+<script>
+    (function(){
+        if (!localStorage.getItem('user_name')) {
+            alert('Please log in first');
+            window.location.href = 'login.html';
+            return;
+        }
+        document.getElementById('signout-link').addEventListener('click', e => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = 'landing.html';
+        });
+    })();
+</script>
+</body>
+</html>

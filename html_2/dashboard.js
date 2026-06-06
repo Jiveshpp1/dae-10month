@@ -1,202 +1,181 @@
-// ✅ Get real logged-in user ID from localStorage (set during login)
-const user_id = localStorage.getItem("user_id") || 1;
+// Get logged-in user ID
+const userId = localStorage.getItem('user_id');
+const userName = localStorage.getItem('user_name');
 
-// Save a new flashcard to the DB
-function saveCard() {
-  const title = document.getElementById("title").value.trim();
-  const content = document.getElementById("content").value.trim();
-
-  if (!title || !content) {
-    alert("Please fill in both title and content.");
-    return;
-  }
-
-  fetch("http://localhost:3000/flashcards", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user_id, title, content })
-  })
-    .then(res => res.json())
-    .then(() => {
-      // Clear the form fields after saving
-      document.getElementById("title").value = "";
-      document.getElementById("content").value = "";
-      loadCards(); // Reload the list
-    })
-    .catch(err => console.error("Save card error:", err));
+// Update greeting
+const greeting = document.getElementById('user-greeting');
+if (userName) {
+    greeting.textContent = `Welcome back, ${userName}!`;
+} else {
+    greeting.textContent = 'Welcome! Please log in to see your content.';
 }
 
-// Delete a flashcard by ID
-function deleteCard(id) {
-  fetch(`http://localhost:3000/flashcards/${id}`, {
-    method: "DELETE"
-  })
-    .then(() => loadCards())
-    .catch(err => console.error("Delete card error:", err));
+// Sign out handler
+const signoutLink = document.getElementById('signout-link');
+const modal = document.getElementById('signout-modal');
+const confirm = document.getElementById('signout-confirm');
+const cancel = document.getElementById('signout-cancel');
+
+if (signoutLink) {
+    signoutLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        modal.style.display = 'flex';
+    });
 }
 
-// Load all flashcards for the current user
-function loadCards() {
-  fetch(`http://localhost:3000/flashcards/${user_id}`)
-    .then(res => res.json())
-    .then(data => {
-      const container = document.getElementById("cards");
+cancel.addEventListener('click', () => modal.style.display = 'none');
+confirm.addEventListener('click', () => {
+    localStorage.clear();
+    window.location.href = 'landing.html';
+});
 
-      if (!data || data.length === 0) {
-        container.innerHTML = "<p>No flashcards yet. Create one above!</p>";
+// Load flashcards and lesson plans
+async function loadDashboard() {
+    if (!userId) {
+        document.getElementById('flashcards-empty').style.display = 'block';
+        document.getElementById('lessons-empty').style.display = 'block';
         return;
-      }
+    }
 
-      // Fetch lessons for dropdowns
-      fetch(`http://localhost:3000/lessons/${user_id}`)
-        .then(res => res.json())
-        .then(lessons => {
-          container.innerHTML = data.map(c => `
-            <div style="border:1px solid #ccc; margin:10px; padding:15px; border-radius:8px; background:#fff;">
-              <h3 style="margin:0 0 8px 0">${c.title}</h3>
-              <p style="margin:0 0 10px 0">${c.content}</p>
-              <button onclick="deleteCard(${c.id})" style="background:red;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;">
-                Delete
-              </button>
-              <div style="margin-top:8px;">
-                <label style="font-size:13px;">Add to lesson:</label>
-                <select onchange="assignFlashcardToLesson(${c.id}, this.value)">
-                  <option value="">Select lesson</option>
-                  ${lessons.map(l => `<option value="${l.id}">${l.title}</option>`).join("")}
-                </select>
-              </div>
+    try {
+        // Load flashcards
+        const flashcardsRes = await fetch(`http://localhost:3000/flashcards/${userId}`);
+        const flashcards = await flashcardsRes.json();
+        displayFlashcards(flashcards);
+
+        // Load lesson plans
+        const lessonsRes = await fetch(`http://localhost:3000/lesson-plans/${userId}`);
+        const lessons = await lessonsRes.json();
+        displayLessonPlans(lessons);
+    } catch (err) {
+        console.error('Error loading dashboard:', err);
+    }
+}
+
+function displayFlashcards(flashcards) {
+    const container = document.getElementById('flashcards-container');
+    const empty = document.getElementById('flashcards-empty');
+    const count = document.getElementById('flashcard-count');
+
+    if (!flashcards || flashcards.length === 0) {
+        container.innerHTML = '';
+        empty.style.display = 'block';
+        count.textContent = '0 cards';
+        return;
+    }
+
+    empty.style.display = 'none';
+    count.textContent = `${flashcards.length} cards`;
+
+    container.innerHTML = flashcards.map(card => `
+        <div class="item-card">
+            <div class="item-title">
+                <i class="fas fa-bookmark"></i>
+                ${escapeHtml(card.title.substring(0, 30))}
             </div>
-          `).join("");
-        });
-    })
-    .catch(err => console.error("Load cards error:", err));
-}
-
-// LESSONS
-function createLesson() {
-  const title = document.getElementById("lesson-title").value.trim();
-  const description = document.getElementById("lesson-desc").value.trim();
-  if (!title) return alert("Lesson title required.");
-  fetch("http://localhost:3000/lessons", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user_id, title, description })
-  })
-    .then(res => res.json())
-    .then(() => {
-      document.getElementById("lesson-title").value = "";
-      document.getElementById("lesson-desc").value = "";
-      loadLessons();
-    });
-}
-
-function deleteLesson(id) {
-  fetch(`http://localhost:3000/lessons/${id}`, { method: "DELETE" })
-    .then(() => loadLessons());
-}
-
-function loadLessons() {
-  fetch(`http://localhost:3000/lessons/${user_id}`)
-    .then(res => res.json())
-    .then(data => {
-      const container = document.getElementById("lessons");
-      if (!data || data.length === 0) {
-        container.innerHTML = "<p>No lessons yet.</p>";
-        return;
-      }
-      container.innerHTML = data.map(l => `
-        <div style="border:1px solid #ccc; margin:10px; padding:10px; border-radius:8px; background:#f9f9f9;">
-          <b>${l.title}</b> <span style="color:#888;">${l.description || ""}</span>
-          <button onclick="deleteLesson(${l.id})" style="background:red;color:white;border:none;padding:2px 8px;border-radius:4px;cursor:pointer;">Delete</button>
-          <button onclick="showLessonFlashcards(${l.id})" style="background:#2ecc71;color:white;border:none;padding:2px 8px;border-radius:4px;cursor:pointer;">View Flashcards</button>
-          <div id="lesson-flashcards-${l.id}" style="margin-top:8px;"></div>
+            <div class="item-content">${escapeHtml(card.content.substring(0, 80))}</div>
+            <div class="item-actions">
+                <button class="item-btn" onclick="deleteFlashcard(${card.id})">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
         </div>
-      `).join("");
-    });
+    `).join('');
 }
 
-function showLessonFlashcards(lessonId) {
-  fetch(`http://localhost:3000/lessons/${lessonId}/flashcards`)
-    .then(res => res.json())
-    .then(data => {
-      const container = document.getElementById(`lesson-flashcards-${lessonId}`);
-      if (!data || data.length === 0) {
-        container.innerHTML = "<i>No flashcards in this lesson.</i>";
+function displayLessonPlans(lessons) {
+    const container = document.getElementById('lessons-container');
+    const empty = document.getElementById('lessons-empty');
+    const count = document.getElementById('lesson-count');
+
+    if (!lessons || lessons.length === 0) {
+        container.innerHTML = '';
+        empty.style.display = 'block';
+        count.textContent = '0 plans';
         return;
-      }
-      container.innerHTML = data.map(c => `
-        <div style="border:1px solid #eee; margin:5px; padding:5px; border-radius:5px; background:#fff;">
-          <b>${c.title}</b>: ${c.content}
-        </div>
-      `).join("");
-    });
+    }
+
+    empty.style.display = 'none';
+    count.textContent = `${lessons.length} plans`;
+
+    container.innerHTML = lessons.map(lesson => {
+        const created = new Date(lesson.created_at).toLocaleDateString();
+        return `
+            <div class="item-card">
+                <div class="item-title">
+                    <i class="fas fa-scroll"></i>
+                    ${escapeHtml(lesson.title.substring(0, 30))}
+                </div>
+                <div style="color:#888;font-size:12px;margin-bottom:8px;">
+                    <i class="fas fa-calendar"></i> ${created}
+                </div>
+                <div class="item-actions">
+                    <button class="item-btn" onclick="viewLesson(${lesson.id}, '${escapeAttr(lesson.title)}')">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                    <button class="item-btn" onclick="deleteLesson(${lesson.id})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
-// Assign flashcard to lesson
-function assignFlashcardToLesson(flashcardId, lessonId) {
-  fetch(`http://localhost:3000/lessons/${lessonId}/flashcards`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ flashcard_id: flashcardId })
-  }).then(() => {
-    loadCards();
-    showLessonFlashcards(lessonId);
-  });
+async function deleteFlashcard(id) {
+    if (!confirm('Delete this flashcard?')) return;
+    
+    try {
+        const res = await fetch(`http://localhost:3000/flashcards/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+            loadDashboard();
+        }
+    } catch (err) {
+        console.error('Error deleting flashcard:', err);
+    }
 }
 
-// STUDY PLANS
-function createPlan() {
-  const title = document.getElementById("plan-title").value.trim();
-  const description = document.getElementById("plan-desc").value.trim();
-  if (!title) return alert("Plan title required.");
-  fetch("http://localhost:3000/plans", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user_id, title, description })
-  })
-    .then(res => res.json())
-    .then(() => {
-      document.getElementById("plan-title").value = "";
-      document.getElementById("plan-desc").value = "";
-      loadPlans();
-    });
+async function deleteLesson(id) {
+    if (!confirm('Delete this lesson plan?')) return;
+    
+    try {
+        const res = await fetch(`http://localhost:3000/lesson-plans/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+            loadDashboard();
+        }
+    } catch (err) {
+        console.error('Error deleting lesson:', err);
+    }
 }
 
-function deletePlan(id) {
-  fetch(`http://localhost:3000/plans/${id}`, { method: "DELETE" })
-    .then(() => loadPlans());
+async function viewLesson(id, title) {
+    try {
+        const res = await fetch(`http://localhost:3000/lesson-plans/${id}/view`);
+        const lesson = await res.json();
+        
+        document.getElementById('lesson-modal-title').textContent = lesson.title || title;
+        document.getElementById('lesson-modal-content').innerHTML = lesson.content || 'No content available';
+        document.getElementById('lesson-modal').classList.add('active');
+    } catch (err) {
+        console.error('Error loading lesson:', err);
+    }
 }
 
-function loadPlans() {
-  fetch(`http://localhost:3000/plans/${user_id}`)
-    .then(res => res.json())
-    .then(data => {
-      const container = document.getElementById("plans");
-      if (!data || data.length === 0) {
-        container.innerHTML = "<p>No study plans yet.</p>";
-        return;
-      }
-      container.innerHTML = data.map(p => `
-        <div style="border:1px solid #ccc; margin:10px; padding:10px; border-radius:8px; background:#f9f9f9;">
-          <b>${p.title}</b> <span style="color:#888;">${p.description || ""}</span>
-          <button onclick="deletePlan(${p.id})" style="background:red;color:white;border:none;padding:2px 8px;border-radius:4px;cursor:pointer;">Delete</button>
-        </div>
-      `).join("");
-    });
+function closeLessonModal() {
+    document.getElementById('lesson-modal').classList.remove('active');
 }
 
-// Make saveCard available globally (called from HTML button onclick)
-window.saveCard = saveCard;
-window.deleteCard = deleteCard;
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
-window.createLesson = createLesson;
-window.deleteLesson = deleteLesson;
-window.showLessonFlashcards = showLessonFlashcards;
-window.assignFlashcardToLesson = assignFlashcardToLesson;
-window.createPlan = createPlan;
-window.deletePlan = deletePlan;
+function escapeAttr(text) {
+    return text.replace(/'/g, "\\'");
+}
 
-// Load all on page open
-loadCards();
-loadLessons();
-loadPlans();
+// Load on page load
+loadDashboard();

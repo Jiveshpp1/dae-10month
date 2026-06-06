@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Classes</title>
+    <link rel="stylesheet" href="aiarea.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .section {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+
+        .create-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 100px;
+            gap: 10px;
+            align-items: end;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"],
+        input[type="color"],
+        button {
+            background: #111;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: inherit;
+        }
+
+        input[type="color"] {
+            cursor: pointer;
+            height: 40px;
+        }
+
+        button {
+            background: #459b71;
+            color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #2ecc71;
+        }
+
+        .classes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .class-card {
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid;
+            position: relative;
+        }
+
+        .class-card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .class-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e0e0e0;
+        }
+
+        .class-desc {
+            font-size: 12px;
+            color: #bbb;
+            line-height: 1.3;
+            min-height: 40px;
+        }
+
+        .class-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .class-btn {
+            flex: 1;
+            padding: 6px 10px;
+            font-size: 12px;
+            background: none;
+            border: 1px solid #333;
+            color: #888;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .class-btn:hover {
+            border-color: #459b71;
+            color: #2ecc71;
+            background: rgba(69, 155, 113, 0.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            color: #444;
+            margin-bottom: 10px;
+        }
+
+        .color-preview {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #2ecc71;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <ul>
+                <li><a href="landing.html">Landing</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="aiarea.html">AI Area</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="#" id="signout-link">Sign Out</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <a href="dashboard.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        <h1>📚 Manage Classes</h1>
+
+        <div id="message"></div>
+
+        <div class="section">
+            <h2>Create New Class</h2>
+            <div class="create-form">
+                <input type="text" id="class-name" placeholder="Class name (e.g., English, Biology)">
+                <input type="text" id="class-desc" placeholder="Description (optional)">
+                <input type="color" id="class-color" value="#459b71">
+                <button onclick="createClass()"><i class="fas fa-plus"></i> Create</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Your Classes</h2>
+            <div id="classes-container" class="classes-grid"></div>
+            <div id="empty-state" class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <p>No classes yet. Create one to get started!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const userId = localStorage.getItem('user_id');
+        const userName = localStorage.getItem('user_name');
+
+        if (!userName) {
+            alert('Please log in first');
+            window.location.href = 'login.html';
+        }
+
+        // Sign out
+        document.getElementById('signout-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = 'landing.html';
+        });
+
+        function showMessage(msg, type = 'success') {
+            const msgDiv = document.getElementById('message');
+            msgDiv.innerHTML = `<div style="background:${type === 'error' ? '#3a1a1a' : '#1a3a1a'};border:1px solid ${type === 'error' ? '#e74c3c' : '#2ecc71'};color:${type === 'error' ? '#e74c3c' : '#2ecc71'};padding:10px 15px;border-radius:6px;margin-bottom:10px;">${msg}</div>`;
+            setTimeout(() => msgDiv.innerHTML = '', 5000);
+        }
+
+        async function createClass() {
+            const name = document.getElementById('class-name').value.trim();
+            const desc = document.getElementById('class-desc').value.trim();
+            const color = document.getElementById('class-color').value;
+
+            if (!name) {
+                showMessage('Please enter a class name ok if you cant type dont use this', 'error');
+                return; 
+            }
+
+            try {
+                const res = await fetch('http://localhost:3000/classes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        class_name: name,
+                        description: desc,
+                        color: color
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    document.getElementById('class-name').value = '';
+                    document.getElementById('class-desc').value = '';
+                    showMessage('Class created! please do work ai', 'success');
+                    loadClasses();
+                } else {
+                    showMessage('Error: ' + (data.error || 'Unknown error'), 'error');
+                }
+            } catch (err) {
+                showMessage('Error: ' + err.message, 'error');
+            }
+        }
+
+        async function deleteClass(id) {
+            if (!confirm('Delete this class?')) return;
+
+            try {
+                const res = await fetch(`http://localhost:3000/classes/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+
+                if (data.success) {
+                    showMessage('Class deleted no more class yay!', 'success');
+                    loadClasses();
+                }
+            } catch (err) {
+                showMessage('Error deleting: ' + err.message, 'error');
+            }
+        }
+
+        async function loadClasses() {
+            try {
+                const res = await fetch(`http://localhost:3000/classes/${userId}`);
+                const classes = await res.json();
+
+                const container = document.getElementById('classes-container');
+                const empty = document.getElementById('empty-state');
+
+                if (!classes || classes.length === 0) {
+                    container.innerHTML = '';
+                    empty.style.display = 'block';
+                    return;
+                }
+
+                empty.style.display = 'none';
+                container.innerHTML = classes.map(cls => `
+                    <div class="class-card" style="border-color: ${cls.color}; background: rgba(${hexToRgb(cls.color).join(',')}, 0.1);">
+                        <div class="class-card-content">
+                            <div style="font-size:30px;color:${cls.color};">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div class="class-name">${cls.class_name}</div>
+                            <div class="class-desc">${cls.description || 'No description'}</div>
+                            <div class="class-actions">
+                                <button class="class-btn" onclick="window.location.href='dashboard.html?class=${cls.id}'">View</button>
+                                <button class="class-btn" onclick="deleteClass(${cls.id})" style="color:#e74c3c;border-color:#e74c3c;">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                showMessage('Error loading classes: ' + err.message, 'error');
+            }
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? [
+                parseInt(result[1], 16),
+                parseInt(result[2], 16),
+                parseInt(result[3], 16)
+            ] : [69, 155, 113];
+        }
+
+        window.deleteClass = deleteClass;
+        window.createClass = createClass;
+        loadClasses();
+    </script>
+</body>
+</html>

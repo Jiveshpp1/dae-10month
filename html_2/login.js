@@ -12,7 +12,7 @@ function saveUserLocally(id, email, username) {
 
 // ─── If already logged in, skip to main ──────────────────────────────────────
 if (localStorage.getItem("user_id")) {
-  window.location.replace("main.html");
+  window.location.replace("aiarea.html");
 }
 
 // ─── Google callback — fires after user picks account ────────────────────────
@@ -25,8 +25,8 @@ async function handleGoogleCredential(response) {
     });
     const data = await res.json();
     if (data.success) {
-      saveUserLocally(data.user.google_id, data.user.email, data.user.username);
-      window.location.replace("main.html");
+      saveUserLocally(data.user.id, data.user.email, data.user.username);
+      window.location.replace("aiarea.html");
     } else {
       alert("Google login failed: " + (data.error || "Unknown error"));
     }
@@ -40,7 +40,7 @@ async function handleGoogleCredential(response) {
 let googleInitialized = false;
 
 function initGoogle() {
-  if (googleInitialized) return;  // ✅ prevent multiple initializations
+  if (googleInitialized) return;  
   if (typeof google === "undefined") {
     console.warn("Google GSI not loaded yet, retrying...");
     setTimeout(initGoogle, 500);
@@ -54,7 +54,7 @@ function initGoogle() {
     cancel_on_tap_outside: true
   });
 
-  // ✅ Render a real Google button — works even when One Tap is blocked by Chrome
+  
   const container = document.getElementById("google-btn-container");
   if (container) {
     google.accounts.id.renderButton(container, {
@@ -66,7 +66,7 @@ function initGoogle() {
   }
 
   googleInitialized = true;
-  console.log("Google GSI initialized ✅");
+  console.log("Google GSI initialized ");
 }
 
 // Run after page loads
@@ -96,7 +96,7 @@ async function registerUser(email, password) {
     if (data.success) {
       saveUserLocally(data.user_id, email, email);
       alert("Account created! Welcome :)");
-      window.location.replace("main.html");
+      window.location.replace("aiarea.html");
     } else {
       alert(data.message || "Signup failed. Email may already be in use.");
     }
@@ -119,7 +119,7 @@ async function signInUser(email, password) {
     if (data.success) {
       saveUserLocally(data.user.id, data.user.email || email, data.user.username || email);
       alert("Welcome back!");
-      window.location.replace("main.html");
+      window.location.replace("aiarea.html");
     } else {
       alert("Wrong email or password, or account does not exist.");
     }

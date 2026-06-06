@@ -18,9 +18,19 @@
       <li><a href="dashboard.html">Dashboard</a></li>
       <li><a href="aiarea.html">AI Area</a></li>
       <li><a href="login.html">Login</a></li>
+      <li><a href="#" id="signout-link">Sign Out</a></li>
     </ul>
   </nav>
 </header>
+
+<!-- Sign Out Modal -->
+<div id="signout-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#222;padding:30px 20px;border-radius:8px;max-width:300px;margin:auto;text-align:center;">
+    <p style="color:#fff;">Are you sure you want to sign out?</p>
+    <button id="signout-confirm" style="background:#e74c3c;color:#fff;padding:8px 18px;border:none;border-radius:4px;margin-right:10px;cursor:pointer;">Sign Out</button>
+    <button id="signout-cancel" style="background:#2ecc71;color:#fff;padding:8px 18px;border:none;border-radius:4px;cursor:pointer;">Cancel</button>
+  </div>
+</div>
 
 <main class="page-center">
   <section id="login-section">
@@ -73,6 +83,33 @@
 
 <!-- ✅ Script at bottom of body -->
 <script src="login.js" type="module"></script>
+
+<!-- Sign Out Modal Logic -->
+<script>
+  (function(){
+    const signoutLink = document.getElementById('signout-link');
+    const modal = document.getElementById('signout-modal');
+    const confirm = document.getElementById('signout-confirm');
+    const cancel = document.getElementById('signout-cancel');
+    const userId = localStorage.getItem('user_id');
+    const userName = localStorage.getItem('user_name');
+
+    if (!signoutLink) return;
+    if (!userId || !userName) {
+      signoutLink.style.display = 'none';
+    } else {
+      signoutLink.textContent = `Sign Out (${userName})`;
+    }
+
+    signoutLink.addEventListener('click', (e)=>{
+      e.preventDefault();
+      modal.style.display = 'flex';
+      modal.querySelector('p').textContent = userName ? `Are you sure you want to sign out of ${userName}?` : 'Are you sure you want to sign out?';
+    });
+    cancel.addEventListener('click', ()=> modal.style.display = 'none');
+    confirm.addEventListener('click', ()=> { localStorage.clear(); window.location.href = "landing.html"; });
+  })();
+</script>
 
 </body>
 </html>
